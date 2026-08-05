@@ -76,6 +76,7 @@
       line-height: .92;
       letter-spacing: -.05em;
       text-transform: uppercase;
+      white-space: nowrap;
     }
 
     .subtitle {
@@ -211,12 +212,10 @@
       background: rgba(255,255,255,.07);
     }
 
-    .standing-row:nth-child(1) .rank { color: #111827; background: var(--gold); }
-    .standing-row:nth-child(2) .rank { color: #111827; background: var(--silver); }
-    .standing-row:nth-child(3) .rank { color: #111827; background: #f59e0b; }
+    .rank { color: #052018; background: var(--accent); }
 
     .standing-name { font-weight: 800; }
-    .standing-meta { color: var(--muted); font-size: .84rem; margin-top: 3px; }
+    .standing-meta { color: var(--muted); font-size: .84rem; margin-top: 6px; display:grid; grid-template-columns:repeat(2, minmax(0, auto)); gap:3px 14px; }
     .standing-points { text-align: right; }
     .standing-points strong { font-size: 1.55rem; display: block; }
     .standing-points span { color: var(--muted); font-size: .78rem; text-transform: uppercase; letter-spacing: .08em; }
@@ -270,12 +269,6 @@
       line-height: 1.5;
     }
 
-    .footer {
-      color: var(--muted);
-      text-align: center;
-      padding: 22px 0 4px;
-      font-size: .85rem;
-    }
 
     @media (max-width: 980px) {
       body { padding: 16px; }
@@ -298,10 +291,10 @@
       body { padding: max(10px, env(safe-area-inset-top)) max(10px, env(safe-area-inset-right)) max(14px, env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-left)); }
       .wrap { width:100%; }
       header { margin-bottom:12px; gap:12px; }
-      h1 { font-size:clamp(2.2rem, 13vw, 3.5rem); }
+      h1 { font-size:clamp(2rem, 10.2vw, 3.2rem); white-space:nowrap; letter-spacing:-.055em; }
       .brand small { font-size:.68rem; margin-bottom:5px; }
       .subtitle { font-size:.86rem; margin-top:8px; }
-      .top-actions { display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:8px; position:sticky; top:max(8px, env(safe-area-inset-top)); z-index:20; padding:8px; margin:0 -2px; border-radius:14px; background:rgba(8,17,31,.88); backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px); }
+      .top-actions { display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:8px; position:sticky; top:max(8px, env(safe-area-inset-top)); z-index:20; padding:8px; margin:0 -2px; border-radius:14px; background:rgba(8,17,31,.88); backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px); }
       .top-actions button { padding:11px 5px; font-size:.82rem; border-radius:12px; min-height:48px; }
       .grid { gap:10px; }
       .card { border-radius:18px; }
@@ -348,10 +341,10 @@
       }
       .mobile-placement-row {
         display:grid;
-        grid-template-columns:minmax(0, 1fr) 86px;
+        grid-template-columns:minmax(0, 1fr) auto;
         grid-template-areas:
-          "name name"
-          "select points";
+          "name points"
+          "select select";
         gap:5px 7px;
         align-items:center;
         min-width:0;
@@ -371,8 +364,12 @@
         grid-area:select;
         min-width:0;
         width:100%;
-        padding:10px 7px;
+        padding:11px 36px 11px 11px;
         min-height:52px;
+        font-weight:800;
+        color:#052018;
+        background-color:var(--accent);
+        border-color:transparent;
       }
       .mobile-points {
         grid-area:points;
@@ -384,13 +381,11 @@
         white-space:nowrap;
       }
       .save-status { margin:0 0 10px; font-size:.76rem; }
-      .footer { padding-top:14px; }
     }
 
     @media (max-width: 390px) {
       .top-actions { grid-template-columns:1fr 1fr; }
-      .top-actions #fullscreenBtn { grid-column:1 / -1; }
-      .mobile-placement-row { grid-template-columns:minmax(0,1fr) 78px; padding:8px; }
+      .mobile-placement-row { padding:8px; }
       .mobile-points { font-size:.64rem; }
     }
 
@@ -409,12 +404,11 @@
   <div class="wrap">
     <header>
       <div class="brand">
-        <h1>Irondude 2026</h1>
+        <h1>IRONDUDE 2026</h1>
       </div>
       <div class="top-actions">
         <button id="exportBtn" class="primary">Speichern</button>
         <button id="importBtn">Daten importieren</button>
-        <button id="fullscreenBtn">Vollbild</button>
         <input id="importFile" type="file" accept="application/json" hidden />
       </div>
     </header>
@@ -453,7 +447,6 @@
 
     <section class="mobile-games" id="mobileGames"></section>
 
-    <div class="footer">Irondude 2026 · Lokale Speicherung im Browser</div>
   </div>
 
 <script>
@@ -525,7 +518,7 @@
   }
 
   function placementOptions(selected) {
-    return `<option value="">–</option>` + [1,2,3,4].map(p => `<option value="${p}" ${String(selected) === String(p) ? 'selected' : ''}>${p}. Platz</option>`).join('');
+    return `<option value="">Platz wählen</option>` + [1,2,3,4].map(p => `<option value="${p}" ${String(selected) === String(p) ? 'selected' : ''}>${p}. Platz</option>`).join('');
   }
 
   function isGameComplete(game) {
@@ -680,7 +673,7 @@
         <div class="rank">${index + 1}</div>
         <div>
           <div class="standing-name">${escapeHtml(item.name)}</div>
-          <div class="standing-meta">${item.counts[1]} Siege · ${item.counts[2]}× Platz 2 · ${item.counts[3]}× Platz 3 · ${item.counts[4]}× Platz 4</div>
+          <div class="standing-meta"><span>${item.counts[1]}x 1. Platz</span><span>${item.counts[2]}x 2. Platz</span><span>${item.counts[3]}x 3. Platz</span><span>${item.counts[4]}x 4. Platz</span></div>
         </div>
         <div class="standing-points"><strong>${item.points}</strong><span>Punkte</span></div>
       </div>
@@ -760,24 +753,6 @@
     return state.games.some(game => game.name.trim() || game.placements.some(Boolean));
   }
 
-  async function toggleFullscreen() {
-    const button = document.getElementById('fullscreenBtn');
-    try {
-      if (!document.fullscreenElement && document.documentElement.requestFullscreen) {
-        await document.documentElement.requestFullscreen();
-        button.textContent = 'Vollbild beenden';
-      } else if (document.fullscreenElement && document.exitFullscreen) {
-        await document.exitFullscreen();
-        button.textContent = 'Vollbild';
-      } else {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        alert('Safari unterstützt den Vollbildmodus für lokale HTML-Dateien nur eingeschränkt. Blende die Browserleisten durch Scrollen aus oder öffne die Datei als Web-App über den Home-Bildschirm.');
-      }
-    } catch {
-      alert('Der Vollbildmodus konnte in dieser Safari-Ansicht nicht gestartet werden.');
-    }
-  }
-
   async function requestWakeLock() {
     if (!('wakeLock' in navigator) || wakeLock) return;
     try {
@@ -809,10 +784,6 @@
   }
 
   document.getElementById('exportBtn').addEventListener('click', exportData);
-  document.getElementById('fullscreenBtn').addEventListener('click', toggleFullscreen);
-  document.addEventListener('fullscreenchange', () => {
-    document.getElementById('fullscreenBtn').textContent = document.fullscreenElement ? 'Vollbild beenden' : 'Vollbild';
-  });
   document.getElementById('importBtn').addEventListener('click', () => document.getElementById('importFile').click());
   document.getElementById('importFile').addEventListener('change', e => {
     if (e.target.files[0]) importData(e.target.files[0]);
