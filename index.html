@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Irondude 2026" />
+  <meta name="theme-color" content="#08111f" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="format-detection" content="telephone=no" />
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png" />
+  <title>Irondude 2026 – Scoreboard</title>
+  <style>
+    :root {
+      --bg: #08111f;
+      --panel: rgba(15, 28, 48, 0.92);
+      --panel-2: rgba(20, 37, 63, 0.95);
+      --border: rgba(255, 255, 255, 0.10);
+      --text: #f5f7fb;
+      --muted: #9dacbf;
+      --accent: #34d399;
+      --accent-2: #22d3ee;
+      --danger: #fb7185;
+      --gold: #facc15;
+      --silver: #cbd5e1;
+      --bronze: #d97706;
+      --shadow: 0 18px 40px rgba(0,0,0,.28);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(34, 211, 238, .12), transparent 28%),
+        radial-gradient(circle at top right, rgba(52, 211, 153, .12), transparent 24%),
+        linear-gradient(135deg, #07101c 0%, #0a1728 52%, #08111f 100%);
+      padding: max(14px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) max(18px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
+      -webkit-text-size-adjust: 100%;
+      overscroll-behavior-y: none;
+      overflow-x: hidden;
+    }
+
+    .wrap {
+      width: min(680px, 100%);
+      margin: 0 auto;
+    }
+
+    header {
+      display: flex;
+      gap: 20px;
+      align-items: flex-end;
+      justify-content: space-between;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+    }
+
+    .brand small {
+      display: inline-block;
+      color: var(--accent-2);
+      text-transform: uppercase;
+      letter-spacing: .22em;
+      font-weight: 800;
+      margin-bottom: 8px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(2.4rem, 6vw, 5.2rem);
+      line-height: .92;
+      letter-spacing: -.05em;
+      text-transform: uppercase;
+    }
+
+    .subtitle {
+      margin-top: 12px;
+      color: var(--muted);
+      max-width: 680px;
+      font-size: 1rem;
+    }
+
+    .top-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      min-height: 46px;
+      padding: 12px 15px;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+      transition: .2s ease;
+      background: rgba(255,255,255,.06);
+      color: var(--text);
+    }
+
+    button:hover { transform: translateY(-1px); border-color: rgba(255,255,255,.22); }
+    .primary { background: linear-gradient(135deg, var(--accent), #10b981); color: #052018; border: none; }
+    .danger { color: #ffdbe2; border-color: rgba(251,113,133,.35); }
+
+    .save-status {
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:7px;
+      min-height:28px;
+      margin:2px 0 12px;
+      color:var(--muted);
+      font-size:.82rem;
+      text-align:center;
+    }
+    .save-status::before {
+      content:"";
+      width:8px;
+      height:8px;
+      border-radius:50%;
+      background:var(--accent);
+      box-shadow:0 0 0 4px rgba(52,211,153,.10);
+      flex:0 0 auto;
+    }
+    .save-status.saving::before { background:var(--gold); }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 20px;
+      align-items: start;
+    }
+
+    .card {
+      background: linear-gradient(180deg, rgba(20,37,63,.96), rgba(11,24,42,.96));
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .card-head {
+      padding: 20px 22px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .card-head h2 { margin: 0; font-size: 1.1rem; }
+    .card-head span { color: var(--muted); font-size: .92rem; }
+    .card-body { padding: 20px 22px 22px; }
+
+    input, select {
+      width: 100%;
+      min-height: 46px;
+      font-size: 16px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,.05);
+      color: var(--text);
+      border-radius: 12px;
+      padding: 11px 12px;
+      font: inherit;
+      outline: none;
+    }
+
+    input:focus, select:focus {
+      border-color: rgba(34,211,238,.65);
+      box-shadow: 0 0 0 3px rgba(34,211,238,.10);
+    }
+
+    select option { color: #08111f; }
+
+    .progress-wrap { margin-top: 0; }
+    .progress-label { display: flex; justify-content: space-between; color: var(--muted); font-size: .9rem; margin-bottom: 8px; }
+    .progress { height: 10px; border-radius: 999px; background: rgba(255,255,255,.07); overflow: hidden; }
+    .progress > div { height: 100%; width: 0%; background: linear-gradient(90deg, var(--accent-2), var(--accent)); transition: width .25s ease; }
+
+    .standings {
+      display: grid;
+      gap: 10px;
+    }
+
+    .standing-row {
+      display: grid;
+      grid-template-columns: 54px 1fr auto;
+      gap: 12px;
+      align-items: center;
+      padding: 14px;
+      border-radius: 16px;
+      background: rgba(255,255,255,.045);
+      border: 1px solid var(--border);
+    }
+
+    .rank {
+      width: 42px;
+      height: 42px;
+      display: grid;
+      place-items: center;
+      border-radius: 13px;
+      font-weight: 900;
+      background: rgba(255,255,255,.07);
+    }
+
+    .standing-row:nth-child(1) .rank { color: #111827; background: var(--gold); }
+    .standing-row:nth-child(2) .rank { color: #111827; background: var(--silver); }
+    .standing-row:nth-child(3) .rank { color: #111827; background: #f59e0b; }
+
+    .standing-name { font-weight: 800; }
+    .standing-meta { color: var(--muted); font-size: .84rem; margin-top: 3px; }
+    .standing-points { text-align: right; }
+    .standing-points strong { font-size: 1.55rem; display: block; }
+    .standing-points span { color: var(--muted); font-size: .78rem; text-transform: uppercase; letter-spacing: .08em; }
+
+    .table-card { margin-top: 14px; }
+    .table-scroll { overflow-x: auto; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 980px;
+    }
+
+    th, td {
+      padding: 12px 10px;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+      vertical-align: middle;
+    }
+
+    th {
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      font-size: .72rem;
+      background: rgba(255,255,255,.025);
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+
+    td:first-child, th:first-child { padding-left: 22px; }
+    td:last-child, th:last-child { padding-right: 22px; }
+    tr:last-child td { border-bottom: none; }
+
+    .game-index {
+      color: var(--accent-2);
+      font-weight: 900;
+      width: 42px;
+    }
+
+    .game-name { min-width: 170px; }
+    .placement { min-width: 118px; }
+    .points-cell { color: var(--accent); font-weight: 900; text-align: center; min-width: 70px; }
+    .invalid { border-color: var(--danger) !important; box-shadow: 0 0 0 3px rgba(251,113,133,.10) !important; }
+
+    .note {
+      color: var(--muted);
+      font-size: .84rem;
+      margin-top: 12px;
+      line-height: 1.5;
+    }
+
+    .footer {
+      color: var(--muted);
+      text-align: center;
+      padding: 22px 0 4px;
+      font-size: .85rem;
+    }
+
+    @media (max-width: 980px) {
+      body { padding: 16px; }
+      .grid { grid-template-columns: 1fr; }
+      header { align-items: flex-start; }
+      .top-actions { width: 100%; }
+      .top-actions button { flex: 1; }
+    }
+
+
+    .progress-card { margin-bottom:14px; }
+    .standings-card { margin-bottom:14px; }
+    .progress-wrap { padding:22px; border-radius:20px; background:linear-gradient(135deg, rgba(34,211,238,.12), rgba(52,211,153,.12)); border:1px solid rgba(52,211,153,.25); }
+    .progress-label { color:var(--text); font-size:1rem; align-items:end; }
+    .progress-label strong { font-size:1.35rem; color:var(--accent); }
+    .progress { height:18px; box-shadow: inset 0 0 0 1px rgba(255,255,255,.05); }
+    .mobile-games { display:none; }
+
+    @media (max-width: 900px) {
+      body { padding: max(10px, env(safe-area-inset-top)) max(10px, env(safe-area-inset-right)) max(14px, env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-left)); }
+      .wrap { width:100%; }
+      header { margin-bottom:12px; gap:12px; }
+      h1 { font-size:clamp(2.2rem, 13vw, 3.5rem); }
+      .brand small { font-size:.68rem; margin-bottom:5px; }
+      .subtitle { font-size:.86rem; margin-top:8px; }
+      .top-actions { display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:8px; position:sticky; top:max(8px, env(safe-area-inset-top)); z-index:20; padding:8px; margin:0 -2px; border-radius:14px; background:rgba(8,17,31,.88); backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px); }
+      .top-actions button { padding:11px 5px; font-size:.82rem; border-radius:12px; min-height:48px; }
+      .grid { gap:10px; }
+      .card { border-radius:18px; }
+      .card-head { padding:14px 15px; }
+      .card-body { padding:12px 14px 15px; }
+      .progress-card .card-body { padding:0; }
+      .progress-wrap { padding:18px 16px; border-radius:18px; }
+      .progress { height:20px; }
+      .progress-label strong { font-size:1.15rem; }
+      .note { display:none; }
+      .standing-row { grid-template-columns:40px 1fr auto; padding:10px; gap:8px; }
+      .rank { width:34px; height:34px; }
+      .standing-points strong { font-size:1.25rem; }
+      .standing-meta { font-size:.7rem; }
+      .desktop-games { display:none; }
+      .mobile-games { display:grid; gap:10px; margin-top:10px; }
+      .mobile-game-card { padding:14px; overflow:visible; }
+      .mobile-game-top { display:flex; justify-content:space-between; align-items:center; margin-bottom:9px; }
+      .mobile-game-number { color:var(--accent-2); font-weight:900; text-transform:uppercase; letter-spacing:.08em; font-size:.76rem; }
+      .mobile-status { color:var(--muted); font-size:.7rem; padding:4px 7px; border-radius:999px; background:rgba(255,255,255,.05); }
+      .mobile-status.done { color:#052018; background:var(--accent); font-weight:800; }
+      .mobile-game-layout {
+        display:grid;
+        grid-template-columns:minmax(0, 1fr);
+        gap:10px;
+        width:100%;
+        min-width:0;
+      }
+      .mobile-game-name {
+        width:100%;
+        min-width:0;
+        min-height:58px;
+        font-size:1rem;
+        font-weight:750;
+        line-height:1.25;
+        padding:12px;
+      }
+      .mobile-placement-group {
+        display:grid;
+        grid-template-columns:repeat(2, minmax(0, 1fr));
+        gap:8px;
+        width:100%;
+        min-width:0;
+      }
+      .mobile-placement-row {
+        display:grid;
+        grid-template-columns:minmax(0, 1fr) 86px;
+        grid-template-areas:
+          "name name"
+          "select points";
+        gap:5px 7px;
+        align-items:center;
+        min-width:0;
+        padding:9px;
+        border:1px solid var(--border);
+        border-radius:13px;
+        background:rgba(255,255,255,.035);
+      }
+      .mobile-placement-row strong {
+        grid-area:name;
+        font-size:.86rem;
+        overflow:hidden;
+        text-overflow:ellipsis;
+        white-space:nowrap;
+      }
+      .mobile-placement-row select {
+        grid-area:select;
+        min-width:0;
+        width:100%;
+        padding:10px 7px;
+        min-height:52px;
+      }
+      .mobile-points {
+        grid-area:points;
+        text-align:right;
+        color:var(--accent);
+        font-weight:900;
+        font-size:.68rem;
+        line-height:1.15;
+        white-space:nowrap;
+      }
+      .save-status { margin:0 0 10px; font-size:.76rem; }
+      .footer { padding-top:14px; }
+    }
+
+    @media (max-width: 390px) {
+      .top-actions { grid-template-columns:1fr 1fr; }
+      .top-actions #fullscreenBtn { grid-column:1 / -1; }
+      .mobile-placement-row { grid-template-columns:minmax(0,1fr) 78px; padding:8px; }
+      .mobile-points { font-size:.64rem; }
+    }
+
+    @media print {
+      body { background: white; color: black; padding: 0; }
+      .top-actions, .note { display: none !important; }
+      .card { box-shadow: none; border: 1px solid #ccc; background: white; }
+      .card-head, .card-body, th, td { color: black; }
+      input, select { border: none; color: black; background: transparent; padding: 0; }
+      .standing-row { border: 1px solid #ddd; background: white; }
+      .table-card { break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="brand">
+        <h1>Irondude 2026</h1>
+      </div>
+      <div class="top-actions">
+        <button id="exportBtn" class="primary">Speichern</button>
+        <button id="importBtn">Daten importieren</button>
+        <button id="fullscreenBtn">Vollbild</button>
+        <input id="importFile" type="file" accept="application/json" hidden />
+      </div>
+    </header>
+
+    <div id="saveStatus" class="save-status" aria-live="polite">Noch keine Änderung in dieser Sitzung</div>
+
+    <section class="card progress-card">
+      <div class="card-body">
+        <div class="progress-wrap">
+          <div class="progress-label"><span>Fortschritt</span><strong id="progressText">0 von 10 Spielen</strong></div>
+          <div class="progress"><div id="progressBar"></div></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card standings-card">
+      <div class="card-head">
+        <h2>Gesamtwertung</h2>
+      </div>
+      <div class="card-body">
+        <div class="standings" id="standings"></div>
+      </div>
+    </section>
+
+    <section class="card table-card desktop-games">
+      <div class="card-head">
+        <h2>Spiele & Platzierungen</h2>
+      </div>
+      <div class="table-scroll">
+        <table>
+          <thead id="scoreHead"></thead>
+          <tbody id="scoreBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="mobile-games" id="mobileGames"></section>
+
+    <div class="footer">Irondude 2026 · Lokale Speicherung im Browser</div>
+  </div>
+
+<script>
+  const STORAGE_KEY = 'irondude-2026-scoreboard-v2';
+  const SCORE_MAP = { 1: 10, 2: 7, 3: 5, 4: 3 };
+  const GAME_COUNT = 10;
+  const PLAYER_COUNT = 4;
+  let wakeLock = null;
+  let saveStatusTimer = null;
+
+  const defaultState = () => ({
+    players: ['Jan', 'Max', 'Sören', 'David'],
+    games: Array.from({ length: GAME_COUNT }, () => ({
+      name: '',
+      placements: ['', '', '', '']
+    }))
+  });
+
+  let state = loadState();
+
+  function loadState() {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (!saved) return defaultState();
+      const parsed = JSON.parse(saved);
+      if (!parsed.players || !parsed.games) return defaultState();
+      return parsed;
+    } catch {
+      return defaultState();
+    }
+  }
+
+  function formatTime(date = new Date()) {
+    return date.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+  }
+
+  function updateSaveStatus(text, saving = false) {
+    const status = document.getElementById('saveStatus');
+    if (!status) return;
+    status.textContent = text;
+    status.classList.toggle('saving', saving);
+  }
+
+  function saveState() {
+    updateSaveStatus('Wird automatisch gespeichert …', true);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    clearTimeout(saveStatusTimer);
+    saveStatusTimer = setTimeout(() => updateSaveStatus(`Zuletzt gespeichert: ${formatTime()} Uhr`), 180);
+  }
+
+  function escapeHtml(value) {
+    return String(value)
+      .replaceAll('&', '&amp;')
+      .replaceAll('<', '&lt;')
+      .replaceAll('>', '&gt;')
+      .replaceAll('"', '&quot;')
+      .replaceAll("'", '&#039;');
+  }
+
+  function renderTableHead() {
+    const head = document.getElementById('scoreHead');
+    head.innerHTML = `
+      <tr>
+        <th>#</th>
+        <th>Spielname</th>
+        ${[1,2,3,4].map(position => `<th>${position}. Spieler</th><th>Platz</th><th>Punkte</th>`).join('')}
+      </tr>
+    `;
+  }
+
+  function placementOptions(selected) {
+    return `<option value="">–</option>` + [1,2,3,4].map(p => `<option value="${p}" ${String(selected) === String(p) ? 'selected' : ''}>${p}. Platz</option>`).join('');
+  }
+
+  function isGameComplete(game) {
+    const values = game.placements.filter(Boolean);
+    return values.length === 4 && new Set(values).size === 4;
+  }
+
+  function getStartOrder(gameIndex) {
+    if (gameIndex === 0) return state.players.map((name, playerIndex) => ({ name, playerIndex }));
+    const previous = state.games[gameIndex - 1];
+    if (!isGameComplete(previous)) return null;
+    return state.players.map((name, playerIndex) => ({
+      name,
+      playerIndex,
+      placement: Number(previous.placements[playerIndex])
+    })).sort((a, b) => a.placement - b.placement);
+  }
+
+  function renderMobileGames() {
+    const host = document.getElementById('mobileGames');
+    host.innerHTML = state.games.map((game, gameIndex) => `
+      <article class="card mobile-game-card">
+        <div class="mobile-game-top">
+          <span class="mobile-game-number">Spiel ${gameIndex + 1}</span>
+          <span class="mobile-status ${isGameComplete(game) ? 'done' : ''}">${isGameComplete(game) ? 'Abgeschlossen' : 'Offen'}</span>
+        </div>
+        <div class="mobile-game-layout">
+          <input class="game-name mobile-game-name" data-mobile-game-name="${gameIndex}" value="${escapeHtml(game.name)}" placeholder="Name des Spiels" />
+          ${(() => {
+            const orderedPlayers = getStartOrder(gameIndex) || state.players.map((name, playerIndex) => ({ name, playerIndex }));
+            return [orderedPlayers.slice(0, 2), orderedPlayers.slice(2, 4)].map(group => `
+              <div class="mobile-placement-group">
+                ${group.map(({ name, playerIndex }) => { const placement = game.placements[playerIndex]; return `
+                  <label class="mobile-placement-row">
+                    <strong>${escapeHtml(name)}</strong>
+                    <select class="placement" data-mobile-game="${gameIndex}" data-mobile-player="${playerIndex}">
+                      ${placementOptions(placement)}
+                    </select>
+                    <span class="mobile-points">${placement ? SCORE_MAP[placement] : '–'} Punkte</span>
+                  </label>
+                `}).join('')}
+              </div>
+            `).join('');
+          })()}
+        </div>
+      </article>
+    `).join('');
+
+    host.querySelectorAll('[data-mobile-game-name]').forEach(input => input.addEventListener('input', e => {
+      state.games[Number(e.target.dataset.mobileGameName)].name = e.target.value;
+      saveState();
+      const desktop = document.querySelector(`[data-game-name="${e.target.dataset.mobileGameName}"]`);
+      if (desktop) desktop.value = e.target.value;
+    }));
+
+    host.querySelectorAll('select[data-mobile-game]').forEach(select => select.addEventListener('change', e => {
+      const g = Number(e.target.dataset.mobileGame);
+      const p = Number(e.target.dataset.mobilePlayer);
+      state.games[g].placements[p] = e.target.value;
+      saveState();
+      renderGames();
+      renderStandings();
+      renderProgress();
+    }));
+  }
+
+  function renderGames() {
+    const body = document.getElementById('scoreBody');
+    body.innerHTML = state.games.map((game, gameIndex) => `
+      <tr>
+        <td class="game-index">${String(gameIndex + 1).padStart(2, '0')}</td>
+        <td><input class="game-name" data-game-name="${gameIndex}" value="${escapeHtml(game.name)}" placeholder="Name des Spiels" /></td>
+        ${(getStartOrder(gameIndex) || state.players.map((name, playerIndex) => ({ name, playerIndex }))).map(({ name, playerIndex }) => { const placement = game.placements[playerIndex]; return `
+          <td><strong>${escapeHtml(name)}</strong></td>
+          <td>
+            <select class="placement" data-game="${gameIndex}" data-player="${playerIndex}">
+              ${placementOptions(placement)}
+            </select>
+          </td>
+          <td class="points-cell" id="points-${gameIndex}-${playerIndex}">${placement ? SCORE_MAP[placement] : '–'}${placement ? ' Punkte' : ''}</td>
+        `}).join('')}
+      </tr>
+    `).join('');
+
+    body.querySelectorAll('[data-game-name]').forEach(input => {
+      input.addEventListener('input', e => {
+        state.games[Number(e.target.dataset.gameName)].name = e.target.value;
+        saveState();
+      });
+    });
+
+    body.querySelectorAll('select[data-game]').forEach(select => {
+      select.addEventListener('change', e => {
+        const g = Number(e.target.dataset.game);
+        const p = Number(e.target.dataset.player);
+        state.games[g].placements[p] = e.target.value;
+        saveState();
+        updateGameRow(g);
+        renderGames();
+        renderStandings();
+        renderProgress();
+      });
+    });
+
+    validateAllRows();
+    renderMobileGames();
+  }
+
+  function updateGameRow(gameIndex) {
+    state.games[gameIndex].placements.forEach((placement, playerIndex) => {
+      document.getElementById(`points-${gameIndex}-${playerIndex}`).textContent = placement ? `${SCORE_MAP[placement]} Punkte` : '–';
+    });
+    validateRow(gameIndex);
+  }
+
+  function validateRow(gameIndex) {
+    const placements = state.games[gameIndex].placements.filter(Boolean);
+    const duplicates = placements.filter((value, index) => placements.indexOf(value) !== index);
+    document.querySelectorAll(`select[data-game="${gameIndex}"]`).forEach(select => {
+      select.classList.toggle('invalid', select.value && duplicates.includes(select.value));
+    });
+  }
+
+  function validateAllRows() {
+    state.games.forEach((_, i) => validateRow(i));
+  }
+
+  function calculateStandings() {
+    return state.players.map((name, playerIndex) => {
+      let points = 0;
+      const counts = {1:0, 2:0, 3:0, 4:0};
+      state.games.forEach(game => {
+        const placement = Number(game.placements[playerIndex]);
+        if (SCORE_MAP[placement]) {
+          points += SCORE_MAP[placement];
+          counts[placement]++;
+        }
+      });
+      return { name: name || `Spieler ${playerIndex + 1}`, playerIndex, points, counts };
+    }).sort((a, b) =>
+      b.points - a.points ||
+      b.counts[1] - a.counts[1] ||
+      b.counts[2] - a.counts[2] ||
+      a.playerIndex - b.playerIndex
+    );
+  }
+
+  function renderStandings() {
+    const standings = calculateStandings();
+    document.getElementById('standings').innerHTML = standings.map((item, index) => `
+      <div class="standing-row">
+        <div class="rank">${index + 1}</div>
+        <div>
+          <div class="standing-name">${escapeHtml(item.name)}</div>
+          <div class="standing-meta">${item.counts[1]} Siege · ${item.counts[2]}× Platz 2 · ${item.counts[3]}× Platz 3 · ${item.counts[4]}× Platz 4</div>
+        </div>
+        <div class="standing-points"><strong>${item.points}</strong><span>Punkte</span></div>
+      </div>
+    `).join('');
+  }
+
+  function completedGames() {
+    return state.games.filter(isGameComplete).length;
+  }
+
+  function renderProgress() {
+    const completed = completedGames();
+    document.getElementById('progressText').textContent = `${completed} von ${GAME_COUNT} Spielen`;
+    document.getElementById('progressBar').style.width = `${(completed / GAME_COUNT) * 100}%`;
+  }
+
+  function resetAll() {
+    const ok = confirm('Möchtest du wirklich alle Spieltitel und Platzierungen löschen?');
+    if (!ok) return;
+    state = defaultState();
+    saveState();
+    renderAll();
+  updateSaveStatus(localStorage.getItem(STORAGE_KEY) ? 'Lokaler Spielstand geladen' : 'Noch keine Änderung in dieser Sitzung');
+  }
+
+  async function exportData() {
+    saveState();
+    const now = new Date();
+    const stamp = now.toISOString().slice(0,16).replace('T','-').replace(':','');
+    const filename = `irondude-2026-spielstand-${stamp}.json`;
+    const exportPackage = { app: 'Irondude 2026', version: 3, exportedAt: now.toISOString(), ...state };
+    const content = JSON.stringify(exportPackage, null, 2);
+    const file = new File([content], filename, { type: 'application/json' });
+
+    try {
+      if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({ files: [file], title: 'Irondude 2026 Spielstand' });
+        updateSaveStatus(`Sicherung erstellt: ${formatTime(now)} Uhr`);
+        return;
+      }
+    } catch (error) {
+      if (error && error.name === 'AbortError') return;
+    }
+
+    const blob = new Blob([content], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    updateSaveStatus(`Sicherung erstellt: ${formatTime(now)} Uhr`);
+  }
+
+  function importData(file) {
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const imported = JSON.parse(reader.result);
+        if (!Array.isArray(imported.players) || imported.players.length !== 4 || !Array.isArray(imported.games) || imported.games.length !== 10) {
+          throw new Error('Ungültiges Format');
+        }
+        state = { players: ['Jan', 'Max', 'Sören', 'David'], games: imported.games };
+        saveState();
+        renderAll();
+      } catch {
+        alert('Die Datei konnte nicht importiert werden. Bitte eine zuvor exportierte Irondude-Datei verwenden.');
+      }
+    };
+    reader.readAsText(file);
+  }
+
+
+  function tournamentHasStarted() {
+    return state.games.some(game => game.name.trim() || game.placements.some(Boolean));
+  }
+
+  async function toggleFullscreen() {
+    const button = document.getElementById('fullscreenBtn');
+    try {
+      if (!document.fullscreenElement && document.documentElement.requestFullscreen) {
+        await document.documentElement.requestFullscreen();
+        button.textContent = 'Vollbild beenden';
+      } else if (document.fullscreenElement && document.exitFullscreen) {
+        await document.exitFullscreen();
+        button.textContent = 'Vollbild';
+      } else {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        alert('Safari unterstützt den Vollbildmodus für lokale HTML-Dateien nur eingeschränkt. Blende die Browserleisten durch Scrollen aus oder öffne die Datei als Web-App über den Home-Bildschirm.');
+      }
+    } catch {
+      alert('Der Vollbildmodus konnte in dieser Safari-Ansicht nicht gestartet werden.');
+    }
+  }
+
+  async function requestWakeLock() {
+    if (!('wakeLock' in navigator) || wakeLock) return;
+    try {
+      wakeLock = await navigator.wakeLock.request('screen');
+      wakeLock.addEventListener('release', () => { wakeLock = null; });
+    } catch { /* Nicht auf allen Safari-Versionen verfügbar. */ }
+  }
+
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible' && tournamentHasStarted()) requestWakeLock();
+  });
+
+  window.addEventListener('beforeunload', event => {
+    if (!tournamentHasStarted()) return;
+    saveState();
+    event.preventDefault();
+    event.returnValue = '';
+  });
+
+  document.addEventListener('pointerdown', () => {
+    if (tournamentHasStarted()) requestWakeLock();
+  }, { passive: true });
+
+  function renderAll() {
+    renderTableHead();
+    renderGames();
+    renderStandings();
+    renderProgress();
+  }
+
+  document.getElementById('exportBtn').addEventListener('click', exportData);
+  document.getElementById('fullscreenBtn').addEventListener('click', toggleFullscreen);
+  document.addEventListener('fullscreenchange', () => {
+    document.getElementById('fullscreenBtn').textContent = document.fullscreenElement ? 'Vollbild beenden' : 'Vollbild';
+  });
+  document.getElementById('importBtn').addEventListener('click', () => document.getElementById('importFile').click());
+  document.getElementById('importFile').addEventListener('change', e => {
+    if (e.target.files[0]) importData(e.target.files[0]);
+    e.target.value = '';
+  });
+
+  renderAll();
+
+
+  if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./service-worker.js').catch(() => {
+        /* Die App bleibt auch ohne Service Worker nutzbar. */
+      });
+    });
+  }
+</script>
+</body>
+</html>
