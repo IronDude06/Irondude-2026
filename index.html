@@ -1,0 +1,960 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="Irondude 2026" />
+  <meta name="theme-color" content="#971b14" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="format-detection" content="telephone=no" />
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png" />
+  <title>Irondude 2026 – Scoreboard</title>
+  <style>
+    :root {
+      --red: #971b14;
+      --red-dark: #65100d;
+      --red-soft: #b52a20;
+      --gold: #f1c60b;
+      --gold-soft: #f7dc62;
+      --cream: #fff8e7;
+      --paper: #fffdf7;
+      --ink: #4b1712;
+      --muted: #8d675f;
+      --border: rgba(151, 27, 20, .20);
+      --danger: #7d0b12;
+      --shadow: 0 13px 30px rgba(91, 31, 19, .13);
+    }
+
+    * { box-sizing: border-box; }
+
+    html { background: var(--cream); }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Avenir Next", Avenir, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 50% -12%, rgba(241,198,11,.30), transparent 31%),
+        linear-gradient(135deg, rgba(151,27,20,.035) 25%, transparent 25%) 0 0 / 28px 28px,
+        linear-gradient(315deg, rgba(241,198,11,.045) 25%, transparent 25%) 0 0 / 28px 28px,
+        linear-gradient(180deg, #fffdf8 0%, #fff8e7 70%, #f8edcf 100%);
+      padding: max(12px, env(safe-area-inset-top)) max(10px, env(safe-area-inset-right)) max(18px, env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-left));
+      -webkit-text-size-adjust: 100%;
+      overscroll-behavior-y: none;
+      overflow-x: hidden;
+    }
+
+    .wrap {
+      width: min(700px, 100%);
+      margin: 0 auto;
+    }
+
+    header {
+      display: grid;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+
+    .brand-lockup {
+      position: relative;
+      display: grid;
+      grid-template-columns: 58px minmax(0, 1fr);
+      align-items: center;
+      gap: 10px;
+      min-height: 78px;
+      padding: 8px 12px 8px 8px;
+      overflow: hidden;
+      border: 3px solid var(--gold);
+      border-radius: 18px;
+      background:
+        linear-gradient(108deg, rgba(255,255,255,.04), transparent 36%),
+        var(--red);
+      box-shadow: 0 6px 0 rgba(101,16,13,.14), var(--shadow);
+    }
+
+    .brand-lockup::after {
+      content: "";
+      position: absolute;
+      right: -24px;
+      top: -33px;
+      width: 118px;
+      height: 118px;
+      border: 2px solid rgba(241,198,11,.22);
+      border-radius: 50%;
+      box-shadow: 0 0 0 16px rgba(241,198,11,.08), 0 0 0 33px rgba(241,198,11,.045);
+      pointer-events: none;
+    }
+
+    .brand-emblem {
+      width: 58px;
+      height: 58px;
+      object-fit: cover;
+      border-radius: 50%;
+      border: 3px solid var(--gold);
+      background: var(--cream);
+      box-shadow: 0 0 0 2px var(--red-dark), 0 5px 12px rgba(0,0,0,.18);
+      z-index: 1;
+    }
+
+    .brand-copy { min-width: 0; z-index: 1; }
+
+    h1 {
+      margin: 0;
+      color: var(--gold);
+      font-family: Impact, Haettenschweiler, "Arial Narrow Bold", "Arial Black", sans-serif;
+      font-size: clamp(2rem, 8.8vw, 3.15rem);
+      line-height: .9;
+      letter-spacing: .018em;
+      text-transform: uppercase;
+      white-space: nowrap;
+      text-shadow: 0 2px 0 var(--red-dark);
+    }
+
+    .brand-location {
+      display: block;
+      margin-top: 5px;
+      color: #fff8e7;
+      font-size: .68rem;
+      line-height: 1;
+      letter-spacing: .42em;
+      font-weight: 900;
+      text-transform: uppercase;
+    }
+
+    .top-actions {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      position: sticky;
+      top: max(7px, env(safe-area-inset-top));
+      z-index: 20;
+      padding: 7px;
+      border: 1px solid rgba(151,27,20,.13);
+      border-radius: 14px;
+      background: rgba(255,248,231,.92);
+      box-shadow: 0 8px 20px rgba(91,31,19,.08);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+    }
+
+    button {
+      border: 2px solid var(--red);
+      border-radius: 12px;
+      min-height: 48px;
+      padding: 11px 10px;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+      font: inherit;
+      font-size: .86rem;
+      font-weight: 900;
+      cursor: pointer;
+      transition: .15s ease;
+      background: var(--paper);
+      color: var(--red);
+      box-shadow: 0 3px 0 rgba(101,16,13,.10);
+    }
+
+    button:active { transform: translateY(1px); box-shadow: none; }
+    .primary { background: var(--gold); color: var(--red-dark); border-color: var(--red); }
+
+    .save-status {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      min-height: 27px;
+      margin: 1px 0 10px;
+      color: var(--muted);
+      font-size: .76rem;
+      text-align: center;
+      font-weight: 700;
+    }
+
+    .save-status::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--red);
+      box-shadow: 0 0 0 4px rgba(241,198,11,.22);
+      flex: 0 0 auto;
+    }
+    .save-status.saving::before { background: var(--gold); }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 14px;
+      align-items: start;
+    }
+
+    .card {
+      position: relative;
+      background: rgba(255,253,247,.96);
+      border: 2px solid var(--red);
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .card::before {
+      content: "";
+      position: absolute;
+      inset: 0 0 auto 0;
+      height: 5px;
+      background: var(--gold);
+      z-index: 2;
+    }
+
+    .card-head {
+      padding: 15px 16px 13px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      background: var(--red);
+      border-bottom: 2px solid var(--gold);
+    }
+
+    .card-head h2 {
+      margin: 0;
+      color: var(--gold);
+      font-family: Impact, Haettenschweiler, "Arial Narrow Bold", "Arial Black", sans-serif;
+      font-size: 1.2rem;
+      font-weight: 800;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+    }
+
+    .card-head span { color: var(--cream); font-size: .88rem; }
+    .card-body { padding: 13px 14px 15px; }
+
+    input, select {
+      width: 100%;
+      min-height: 46px;
+      font-size: 16px;
+      border: 2px solid rgba(151,27,20,.30);
+      background: #fffdf7;
+      color: var(--ink);
+      border-radius: 11px;
+      padding: 10px 11px;
+      font: inherit;
+      outline: none;
+    }
+
+    input::placeholder { color: #a8877f; }
+    input:focus, select:focus {
+      border-color: var(--gold);
+      box-shadow: 0 0 0 3px rgba(241,198,11,.22);
+    }
+    select option { color: var(--red-dark); background: var(--cream); }
+
+    .progress-card { margin-bottom: 12px; border-color: var(--red); }
+    .progress-card .card-body { padding: 0; }
+    .progress-wrap {
+      padding: 17px 15px 16px;
+      background:
+        linear-gradient(120deg, rgba(241,198,11,.08), transparent 40%),
+        var(--red);
+    }
+    .progress-label {
+      display: flex;
+      justify-content: space-between;
+      align-items: end;
+      color: var(--cream);
+      font-size: .92rem;
+      font-weight: 800;
+      margin-bottom: 9px;
+    }
+    .progress-label strong { font-size: 1.12rem; color: var(--gold); }
+    .progress {
+      height: 19px;
+      border: 2px solid var(--gold);
+      border-radius: 999px;
+      background: rgba(101,16,13,.88);
+      overflow: hidden;
+      box-shadow: inset 0 2px 5px rgba(0,0,0,.16);
+    }
+    .progress > div {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #f7dc62, var(--gold) 58%, #e7a90a);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.38);
+      transition: width .25s ease;
+    }
+
+    .standings-card { margin-bottom: 12px; }
+    .standings { display: grid; gap: 8px; }
+    .standing-row {
+      display: grid;
+      grid-template-columns: 88px minmax(0, 1fr) auto;
+      gap: 10px;
+      align-items: center;
+      padding: 10px;
+      border-radius: 15px;
+      background: linear-gradient(135deg, #fffdf7, #fff5d9);
+      border: 1.5px solid rgba(151,27,20,.24);
+      box-shadow: inset 4px 0 0 var(--gold);
+    }
+
+    .player-photo {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      object-fit: cover;
+      object-position: center;
+      display: block;
+      border: 3px solid var(--gold);
+      box-shadow: 0 0 0 2px var(--red), 0 4px 12px rgba(91,31,19,.15);
+      background: var(--cream);
+    }
+    .standing-photo { width: 82px; height: 82px; }
+    .table-player-photo { width: 42px; height: 42px; margin: auto; }
+    .player-photo-cell { text-align: center; min-width: 58px; }
+
+    .standing-meta {
+      color: var(--red-dark);
+      font-size: .80rem;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 4px;
+      line-height: 1.18;
+      font-weight: 800;
+    }
+    .standing-meta span { display: flex; align-items: center; gap: 6px; }
+    .standing-meta span::before {
+      content: "";
+      width: 7px;
+      height: 7px;
+      border-radius: 2px;
+      background: var(--gold);
+      border: 1px solid var(--red);
+      flex: 0 0 auto;
+    }
+
+    .standing-points { text-align: right; color: var(--red); min-width: 58px; }
+    .standing-points strong {
+      font-family: Impact, Haettenschweiler, "Arial Narrow Bold", "Arial Black", sans-serif;
+      font-size: 1.55rem;
+      line-height: 1;
+      display: block;
+      letter-spacing: .02em;
+    }
+    .standing-points span {
+      color: var(--muted);
+      font-size: .66rem;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      font-weight: 900;
+    }
+
+    .table-card { margin-top: 12px; }
+    .table-scroll { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; min-width: 980px; }
+    th, td { padding: 12px 10px; border-bottom: 1px solid var(--border); text-align: left; vertical-align: middle; }
+    th {
+      color: var(--gold);
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      font-size: .72rem;
+      background: var(--red);
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+    td:first-child, th:first-child { padding-left: 18px; }
+    td:last-child, th:last-child { padding-right: 18px; }
+    tr:last-child td { border-bottom: none; }
+    .game-index { color: var(--red); font-weight: 900; width: 42px; }
+    .game-name { min-width: 170px; }
+    .placement { min-width: 86px; }
+    .points-cell { color: var(--red); font-weight: 900; text-align: center; min-width: 70px; }
+    .invalid { border-color: var(--danger) !important; box-shadow: 0 0 0 3px rgba(125,11,18,.12) !important; }
+    .note { color: var(--muted); font-size: .84rem; margin-top: 12px; line-height: 1.5; }
+    .mobile-games { display: none; }
+
+    @media (max-width: 900px) {
+      body {
+        padding: max(9px, env(safe-area-inset-top)) max(9px, env(safe-area-inset-right)) max(14px, env(safe-area-inset-bottom)) max(9px, env(safe-area-inset-left));
+      }
+      .wrap { width: 100%; }
+      header { gap: 8px; }
+      .brand-lockup { grid-template-columns: 52px minmax(0,1fr); min-height: 70px; padding: 7px 10px 7px 7px; border-radius: 16px; }
+      .brand-emblem { width: 52px; height: 52px; }
+      h1 { font-size: clamp(1.92rem, 8.7vw, 2.75rem); }
+      .brand-location { font-size: .59rem; margin-top: 4px; letter-spacing: .36em; }
+      .top-actions button { min-height: 48px; padding: 10px 5px; font-size: .82rem; }
+      .card { border-radius: 16px; }
+      .card-head { padding: 13px 14px 11px; }
+      .card-head h2 { font-size: 1.08rem; }
+      .card-body { padding: 11px 12px 13px; }
+      .progress-wrap { padding: 15px 13px 14px; }
+      .progress { height: 19px; }
+      .progress-label strong { font-size: 1.08rem; }
+      .note { display: none; }
+      .desktop-games { display: none; }
+      .mobile-games { display: grid; gap: 10px; margin-top: 10px; }
+
+      .mobile-game-card {
+        padding: 12px;
+        overflow: visible;
+        background: linear-gradient(180deg, #fffdf7, #fff9e8);
+      }
+      .mobile-game-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin: 1px 1px 9px;
+      }
+      .mobile-game-number {
+        color: var(--red);
+        font-family: Impact, Haettenschweiler, "Arial Narrow Bold", "Arial Black", sans-serif;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: .08em;
+        font-size: .88rem;
+      }
+      .mobile-status {
+        color: var(--red);
+        font-size: .68rem;
+        padding: 4px 8px;
+        border-radius: 999px;
+        border: 1px solid rgba(151,27,20,.22);
+        background: #fff5d9;
+        font-weight: 800;
+      }
+      .mobile-status.done {
+        color: var(--red-dark);
+        background: var(--gold);
+        border-color: var(--red);
+      }
+      .mobile-game-layout {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        gap: 9px;
+        width: 100%;
+        min-width: 0;
+      }
+      .mobile-game-name {
+        width: 100%;
+        min-width: 0;
+        min-height: 55px;
+        font-size: 1rem;
+        font-weight: 850;
+        line-height: 1.22;
+        padding: 11px;
+        color: var(--red-dark);
+        background: #fffdf7;
+        border-color: rgba(151,27,20,.30);
+      }
+      .mobile-placement-group {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+        width: 100%;
+        min-width: 0;
+      }
+      .mobile-placement-row {
+        display: grid;
+        grid-template-columns: 52px minmax(0, 1fr);
+        grid-template-rows: auto auto;
+        grid-template-areas:
+          "photo place"
+          "photo points";
+        gap: 4px 9px;
+        align-items: center;
+        min-width: 0;
+        padding: 8px;
+        border: 1.5px solid rgba(151,27,20,.24);
+        border-radius: 13px;
+        background: linear-gradient(135deg, #fffdf7, #fff4d3);
+      }
+      .mobile-player-photo { grid-area: photo; width: 52px; height: 52px; }
+      .mobile-place-line { grid-area: place; display: block; min-width: 0; }
+      .mobile-placement-row select {
+        min-width: 0;
+        width: 55px;
+        padding: 7px 23px 7px 8px;
+        min-height: 37px;
+        font-size: 1.05rem;
+        line-height: 1;
+        text-align: left;
+        font-weight: 950;
+        -webkit-appearance: none;
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%2365100d' d='M1.4 1.2 6 5.8l4.6-4.6L12 2.6l-6 6-6-6z'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 7px center;
+        background-size: 10px 7px;
+        color: var(--red-dark);
+        background-color: var(--gold);
+        border-color: var(--red);
+        border-radius: 9px;
+      }
+      .mobile-points {
+        grid-area: points;
+        color: var(--red);
+        font-weight: 900;
+        font-size: .74rem;
+        line-height: 1.12;
+        white-space: nowrap;
+      }
+      .standing-row { grid-template-columns: 88px minmax(0, 1fr) auto; gap: 10px; padding: 10px; }
+      .standing-photo { width: 80px; height: 80px; }
+      .standing-meta { font-size: .79rem; gap: 4px; }
+      .standing-points strong { font-size: 1.48rem; }
+    }
+
+    @media (max-width: 390px) {
+      .brand-lockup { grid-template-columns: 48px minmax(0,1fr); }
+      .brand-emblem { width: 48px; height: 48px; }
+      h1 { font-size: clamp(1.76rem, 8.5vw, 2.35rem); }
+      .brand-location { font-size: .55rem; }
+      .mobile-placement-row { grid-template-columns: 48px minmax(0,1fr); padding: 7px; gap: 4px 7px; }
+      .mobile-player-photo { width: 48px; height: 48px; }
+      .mobile-placement-row select { width: 52px; padding-right: 21px; }
+      .mobile-points { font-size: .64rem; }
+      .standing-row { grid-template-columns: 78px minmax(0,1fr) auto; gap: 8px; padding: 9px; }
+      .standing-photo { width: 72px; height: 72px; }
+      .standing-meta { font-size: .73rem; }
+      .standing-points strong { font-size: 1.34rem; }
+    }
+
+    @media print {
+      body { background: white; color: black; padding: 0; }
+      .top-actions, .note { display: none !important; }
+      .card { box-shadow: none; border: 1px solid #aaa; background: white; }
+      .card-head { background: white; border-bottom: 1px solid #aaa; }
+      .card-head h2, .card-head span, .card-body, th, td { color: black; }
+      input, select { border: none; color: black; background: transparent; padding: 0; }
+      .standing-row { border: 1px solid #ddd; background: white; box-shadow: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="brand-lockup">
+        <img class="brand-emblem" src="./brand/emblem.png" alt="Irondude Barcelona Emblem" />
+        <div class="brand-copy">
+          <h1>IRONDUDE 2026</h1>
+          <span class="brand-location">Barcelona</span>
+        </div>
+      </div>
+      <div class="top-actions">
+        <button id="exportBtn" class="primary">Speichern</button>
+        <button id="importBtn">Daten importieren</button>
+        <input id="importFile" type="file" accept="application/json" hidden />
+      </div>
+    </header>
+
+    <div id="saveStatus" class="save-status" aria-live="polite">Noch keine Änderung in dieser Sitzung</div>
+
+    <section class="card progress-card">
+      <div class="card-body">
+        <div class="progress-wrap">
+          <div class="progress-label"><span>Fortschritt</span><strong id="progressText">0 von 10 Spielen</strong></div>
+          <div class="progress"><div id="progressBar"></div></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card standings-card">
+      <div class="card-head">
+        <h2>Gesamtwertung</h2>
+      </div>
+      <div class="card-body">
+        <div class="standings" id="standings"></div>
+      </div>
+    </section>
+
+    <section class="card table-card desktop-games">
+      <div class="card-head">
+        <h2>Spiele & Platzierungen</h2>
+      </div>
+      <div class="table-scroll">
+        <table>
+          <thead id="scoreHead"></thead>
+          <tbody id="scoreBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="mobile-games" id="mobileGames"></section>
+
+  </div>
+
+<script>
+  const STORAGE_KEY = 'irondude-2026-scoreboard-v2';
+  const SCORE_MAP = { 1: 10, 2: 7, 3: 5, 4: 3 };
+  const GAME_COUNT = 10;
+  const PLAYER_COUNT = 4;
+  const PLAYER_IMAGES = {
+    'Jan': './players/jan.jpg',
+    'Max': './players/max.jpg',
+    'Sören': './players/soeren.jpg',
+    'David': './players/david.jpg'
+  };
+  let wakeLock = null;
+  let saveStatusTimer = null;
+
+  const defaultState = () => ({
+    players: ['Jan', 'Max', 'Sören', 'David'],
+    games: Array.from({ length: GAME_COUNT }, () => ({
+      name: '',
+      placements: ['', '', '', '']
+    }))
+  });
+
+  let state = loadState();
+
+  function loadState() {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (!saved) return defaultState();
+      const parsed = JSON.parse(saved);
+      if (!parsed.players || !parsed.games) return defaultState();
+      return parsed;
+    } catch {
+      return defaultState();
+    }
+  }
+
+  function formatTime(date = new Date()) {
+    return date.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+  }
+
+  function updateSaveStatus(text, saving = false) {
+    const status = document.getElementById('saveStatus');
+    if (!status) return;
+    status.textContent = text;
+    status.classList.toggle('saving', saving);
+  }
+
+  function saveState() {
+    updateSaveStatus('Wird automatisch gespeichert …', true);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    clearTimeout(saveStatusTimer);
+    saveStatusTimer = setTimeout(() => updateSaveStatus(`Zuletzt gespeichert: ${formatTime()} Uhr`), 180);
+  }
+
+  function escapeHtml(value) {
+    return String(value)
+      .replaceAll('&', '&amp;')
+      .replaceAll('<', '&lt;')
+      .replaceAll('>', '&gt;')
+      .replaceAll('"', '&quot;')
+      .replaceAll("'", '&#039;');
+  }
+
+  function renderTableHead() {
+    const head = document.getElementById('scoreHead');
+    head.innerHTML = `
+      <tr>
+        <th>#</th>
+        <th>Spielname</th>
+        ${[1,2,3,4].map(position => `<th>Spieler</th><th>Platz</th><th>Punkte</th>`).join('')}
+      </tr>
+    `;
+  }
+
+  function playerImage(name) {
+    return PLAYER_IMAGES[name] || '';
+  }
+
+  function playerPhoto(name, className = '') {
+    return `<img class="player-photo ${className}" src="${playerImage(name)}" alt="${escapeHtml(name)}" title="${escapeHtml(name)}" />`;
+  }
+
+  function placementOptions(selected) {
+    return `<option value=""></option>` + [1,2,3,4].map(p => `<option value="${p}" ${String(selected) === String(p) ? 'selected' : ''}>${p}</option>`).join('');
+  }
+
+  function isGameComplete(game) {
+    const values = game.placements.filter(Boolean);
+    return values.length === 4 && new Set(values).size === 4;
+  }
+
+  function getStartOrder(gameIndex) {
+    if (gameIndex === 0) return state.players.map((name, playerIndex) => ({ name, playerIndex }));
+    const previous = state.games[gameIndex - 1];
+    if (!isGameComplete(previous)) return null;
+    return state.players.map((name, playerIndex) => ({
+      name,
+      playerIndex,
+      placement: Number(previous.placements[playerIndex])
+    })).sort((a, b) => a.placement - b.placement);
+  }
+
+  function renderMobileGames() {
+    const host = document.getElementById('mobileGames');
+    host.innerHTML = state.games.map((game, gameIndex) => `
+      <article class="card mobile-game-card">
+        <div class="mobile-game-top">
+          <span class="mobile-game-number">Spiel ${gameIndex + 1}</span>
+          <span class="mobile-status ${isGameComplete(game) ? 'done' : ''}">${isGameComplete(game) ? 'Abgeschlossen' : 'Offen'}</span>
+        </div>
+        <div class="mobile-game-layout">
+          <input class="game-name mobile-game-name" data-mobile-game-name="${gameIndex}" value="${escapeHtml(game.name)}" placeholder="Name des Spiels" />
+          ${(() => {
+            const orderedPlayers = getStartOrder(gameIndex) || state.players.map((name, playerIndex) => ({ name, playerIndex }));
+            return [orderedPlayers.slice(0, 2), orderedPlayers.slice(2, 4)].map(group => `
+              <div class="mobile-placement-group">
+                ${group.map(({ name, playerIndex }) => { const placement = game.placements[playerIndex]; return `
+                  <label class="mobile-placement-row" title="${escapeHtml(name)}">
+                    ${playerPhoto(name, 'mobile-player-photo')}
+                    <div class="mobile-place-line">
+                      <select class="placement" aria-label="Platzierung für ${escapeHtml(name)}" data-mobile-game="${gameIndex}" data-mobile-player="${playerIndex}">
+                        ${placementOptions(placement)}
+                      </select>
+                    </div>
+                    <span class="mobile-points">${placement ? SCORE_MAP[placement] : '–'} Punkte</span>
+                  </label>
+                `}).join('')}
+              </div>
+            `).join('');
+          })()}
+        </div>
+      </article>
+    `).join('');
+
+    host.querySelectorAll('[data-mobile-game-name]').forEach(input => input.addEventListener('input', e => {
+      state.games[Number(e.target.dataset.mobileGameName)].name = e.target.value;
+      saveState();
+      const desktop = document.querySelector(`[data-game-name="${e.target.dataset.mobileGameName}"]`);
+      if (desktop) desktop.value = e.target.value;
+    }));
+
+    host.querySelectorAll('select[data-mobile-game]').forEach(select => select.addEventListener('change', e => {
+      const g = Number(e.target.dataset.mobileGame);
+      const p = Number(e.target.dataset.mobilePlayer);
+      state.games[g].placements[p] = e.target.value;
+      saveState();
+      renderGames();
+      renderStandings();
+      renderProgress();
+    }));
+  }
+
+  function renderGames() {
+    const body = document.getElementById('scoreBody');
+    body.innerHTML = state.games.map((game, gameIndex) => `
+      <tr>
+        <td class="game-index">${String(gameIndex + 1).padStart(2, '0')}</td>
+        <td><input class="game-name" data-game-name="${gameIndex}" value="${escapeHtml(game.name)}" placeholder="Name des Spiels" /></td>
+        ${(getStartOrder(gameIndex) || state.players.map((name, playerIndex) => ({ name, playerIndex }))).map(({ name, playerIndex }) => { const placement = game.placements[playerIndex]; return `
+          <td class="player-photo-cell">${playerPhoto(name, 'table-player-photo')}</td>
+          <td>
+            <select class="placement" data-game="${gameIndex}" data-player="${playerIndex}">
+              ${placementOptions(placement)}
+            </select>
+          </td>
+          <td class="points-cell" id="points-${gameIndex}-${playerIndex}">${placement ? SCORE_MAP[placement] : '–'}${placement ? ' Punkte' : ''}</td>
+        `}).join('')}
+      </tr>
+    `).join('');
+
+    body.querySelectorAll('[data-game-name]').forEach(input => {
+      input.addEventListener('input', e => {
+        state.games[Number(e.target.dataset.gameName)].name = e.target.value;
+        saveState();
+      });
+    });
+
+    body.querySelectorAll('select[data-game]').forEach(select => {
+      select.addEventListener('change', e => {
+        const g = Number(e.target.dataset.game);
+        const p = Number(e.target.dataset.player);
+        state.games[g].placements[p] = e.target.value;
+        saveState();
+        updateGameRow(g);
+        renderGames();
+        renderStandings();
+        renderProgress();
+      });
+    });
+
+    validateAllRows();
+    renderMobileGames();
+  }
+
+  function updateGameRow(gameIndex) {
+    state.games[gameIndex].placements.forEach((placement, playerIndex) => {
+      document.getElementById(`points-${gameIndex}-${playerIndex}`).textContent = placement ? `${SCORE_MAP[placement]} Punkte` : '–';
+    });
+    validateRow(gameIndex);
+  }
+
+  function validateRow(gameIndex) {
+    const placements = state.games[gameIndex].placements.filter(Boolean);
+    const duplicates = placements.filter((value, index) => placements.indexOf(value) !== index);
+    document.querySelectorAll(`select[data-game="${gameIndex}"]`).forEach(select => {
+      select.classList.toggle('invalid', select.value && duplicates.includes(select.value));
+    });
+  }
+
+  function validateAllRows() {
+    state.games.forEach((_, i) => validateRow(i));
+  }
+
+  function calculateStandings() {
+    return state.players.map((name, playerIndex) => {
+      let points = 0;
+      const counts = {1:0, 2:0, 3:0, 4:0};
+      state.games.forEach(game => {
+        const placement = Number(game.placements[playerIndex]);
+        if (SCORE_MAP[placement]) {
+          points += SCORE_MAP[placement];
+          counts[placement]++;
+        }
+      });
+      return { name: name || `Spieler ${playerIndex + 1}`, playerIndex, points, counts };
+    }).sort((a, b) =>
+      b.points - a.points ||
+      b.counts[1] - a.counts[1] ||
+      b.counts[2] - a.counts[2] ||
+      a.playerIndex - b.playerIndex
+    );
+  }
+
+  function renderStandings() {
+    const standings = calculateStandings();
+    document.getElementById('standings').innerHTML = standings.map((item, index) => `
+      <div class="standing-row">
+        ${playerPhoto(item.name, 'standing-photo')}
+        <div>
+          <div class="standing-meta"><span>${item.counts[1]}x 1. Platz</span><span>${item.counts[2]}x 2. Platz</span><span>${item.counts[3]}x 3. Platz</span><span>${item.counts[4]}x 4. Platz</span></div>
+        </div>
+        <div class="standing-points"><strong>${item.points}</strong><span>Punkte</span></div>
+      </div>
+    `).join('');
+  }
+
+  function completedGames() {
+    return state.games.filter(isGameComplete).length;
+  }
+
+  function renderProgress() {
+    const completed = completedGames();
+    document.getElementById('progressText').textContent = `${completed} von ${GAME_COUNT} Spielen`;
+    document.getElementById('progressBar').style.width = `${(completed / GAME_COUNT) * 100}%`;
+  }
+
+  function resetAll() {
+    const ok = confirm('Möchtest du wirklich alle Spieltitel und Platzierungen löschen?');
+    if (!ok) return;
+    state = defaultState();
+    saveState();
+    renderAll();
+  updateSaveStatus(localStorage.getItem(STORAGE_KEY) ? 'Lokaler Spielstand geladen' : 'Noch keine Änderung in dieser Sitzung');
+  }
+
+  async function exportData() {
+    saveState();
+    const now = new Date();
+    const stamp = now.toISOString().slice(0,16).replace('T','-').replace(':','');
+    const filename = `irondude-2026-spielstand-${stamp}.json`;
+    const exportPackage = { app: 'Irondude 2026', version: 3, exportedAt: now.toISOString(), ...state };
+    const content = JSON.stringify(exportPackage, null, 2);
+    const file = new File([content], filename, { type: 'application/json' });
+
+    try {
+      if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({ files: [file], title: 'Irondude 2026 Spielstand' });
+        updateSaveStatus(`Sicherung erstellt: ${formatTime(now)} Uhr`);
+        return;
+      }
+    } catch (error) {
+      if (error && error.name === 'AbortError') return;
+    }
+
+    const blob = new Blob([content], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    updateSaveStatus(`Sicherung erstellt: ${formatTime(now)} Uhr`);
+  }
+
+  function importData(file) {
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const imported = JSON.parse(reader.result);
+        if (!Array.isArray(imported.players) || imported.players.length !== 4 || !Array.isArray(imported.games) || imported.games.length !== 10) {
+          throw new Error('Ungültiges Format');
+        }
+        state = { players: ['Jan', 'Max', 'Sören', 'David'], games: imported.games };
+        saveState();
+        renderAll();
+      } catch {
+        alert('Die Datei konnte nicht importiert werden. Bitte eine zuvor exportierte Irondude-Datei verwenden.');
+      }
+    };
+    reader.readAsText(file);
+  }
+
+
+  function tournamentHasStarted() {
+    return state.games.some(game => game.name.trim() || game.placements.some(Boolean));
+  }
+
+  async function requestWakeLock() {
+    if (!('wakeLock' in navigator) || wakeLock) return;
+    try {
+      wakeLock = await navigator.wakeLock.request('screen');
+      wakeLock.addEventListener('release', () => { wakeLock = null; });
+    } catch { /* Nicht auf allen Safari-Versionen verfügbar. */ }
+  }
+
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible' && tournamentHasStarted()) requestWakeLock();
+  });
+
+  window.addEventListener('beforeunload', event => {
+    if (!tournamentHasStarted()) return;
+    saveState();
+    event.preventDefault();
+    event.returnValue = '';
+  });
+
+  document.addEventListener('pointerdown', () => {
+    if (tournamentHasStarted()) requestWakeLock();
+  }, { passive: true });
+
+  function renderAll() {
+    renderTableHead();
+    renderGames();
+    renderStandings();
+    renderProgress();
+  }
+
+  document.getElementById('exportBtn').addEventListener('click', exportData);
+  document.getElementById('importBtn').addEventListener('click', () => document.getElementById('importFile').click());
+  document.getElementById('importFile').addEventListener('change', e => {
+    if (e.target.files[0]) importData(e.target.files[0]);
+    e.target.value = '';
+  });
+
+  renderAll();
+
+
+  if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./service-worker.js').catch(() => {
+        /* Die App bleibt auch ohne Service Worker nutzbar. */
+      });
+    });
+  }
+</script>
+</body>
+</html>
